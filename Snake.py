@@ -4,14 +4,14 @@ from random import randint
 import numpy as np
 import time
 
-# 一些常量
+# some constants
 COLORS = ['white', 'black', 'red', 'blue', 'grey', 'white']
 EMPTY = 0
 BODY = 1
 FOOD = 2
 HEAD = 3
 WALL = 4
-# 蛇运动场地
+# board
 BOARD = np.array([
     [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
     [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
@@ -30,23 +30,24 @@ BOARD = np.array([
 ])
 HEIGHT = len(BOARD)
 WIDTH = len(BOARD[0])
-# 蛇初始位置数组， 第一个元素为蛇头位置
+# Array that represents the snake. First element is the head of snake.
 default_location = [(5, 5), (5, 6), (5, 7), (5, 8), (5, 9), (5, 10), (5, 11), (6, 11),
                     (7, 11), (7, 10), (7, 9)]
-# 食物初始位置
+# Initial position of the snake
 food = (5, 1)
-# GUI参数
+# GUI Parameters
 CELL_WIDTH = 40
 width = len(BOARD[0]) * CELL_WIDTH
 height = len(BOARD) * CELL_WIDTH
 
-# 获取点x的各个方向
+# functions to get every direction of position x
 LEFT = lambda x: (x[0], x[1] - 1)
 RIGHT = lambda x: (x[0], x[1] + 1)
 UP = lambda x: (x[0] - 1, x[1])
 DOWN = lambda x: (x[0] + 1, x[1])
 
 
+# snake class
 class Snake:
     def __init__(self, board, locations=default_location, speed=0, virtual=False):
         self.locations = locations
@@ -61,24 +62,24 @@ class Snake:
     def tail(self):
         return self.locations[-1]
 
-    # 朝一个方向移动一步
+    # move one step forward the given direction
     def move(self, direction):
         head = [direction(self.head())]
         self.board[self.tail()] = EMPTY
         temp = self.tail()
-        # 移动蛇
+        # move the snake
         self.locations = head + self.locations[:-1]
         if self.head() == food:
-            # 添加一个块
+            # the snake grow one block
             self.locations = self.locations + [temp]
-            # 重新生成食物
+            # regenerate the food
             self.generate_food()
             self.score += 1
         if not self.virtual:
             time.sleep(self.speed)
         self.update_board()
 
-    # 更新board
+    # update board
     def update_board(self):
         for block in self.locations:
             self.board[block] = BODY
@@ -87,7 +88,7 @@ class Snake:
         if not self.virtual:
             self.draw()
 
-    # 随机生成食物
+    # place food randomly
     def generate_food(self):
         global food
         while True:
@@ -96,7 +97,7 @@ class Snake:
                 food = loc
                 break
 
-    # 判断一个移动是否合法
+    # validate a movement
     def validate_move(self, location, direction):
         if location[0] >= len(self.board) or location[1] >= len(self.board[0])\
                 or location[0] < 0 or location[1] < 0:
@@ -105,7 +106,7 @@ class Snake:
             next_loc = self.board[direction(location)]
             return next_loc == EMPTY or next_loc == FOOD
 
-    # 获取合法的移动方位
+    # get valid directions
     def get_valid_moves(self, location):
         movement = []
         for d in [LEFT, RIGHT, UP, DOWN]:
@@ -113,7 +114,7 @@ class Snake:
                 movement.append(d)
         return movement
 
-    # 绘制GUI
+    # draw GUI
     def draw(self):
         canvas.delete('all')
         canvas.config(width=width, height=height)
@@ -173,7 +174,7 @@ class Snake:
                 longest_move = d
         return longest_move
 
-    # 仅仅用来虚拟运行蛇
+    # is it safe to eat the food?
     def safe_to_eat(self):
         global food
         new_environment = self.board.copy()
@@ -188,7 +189,7 @@ class Snake:
             return True
         else:
             return False
-
+    
     def has_path_to(self, source, goal):
         has_path = False
         result = self.A_star(goal)
@@ -219,5 +220,5 @@ if __name__ == '__main__':
     canvas.pack()
     s = Snake(BOARD)
     s.run()
-    # 关闭窗口
+    # close the main window
     root.mainloop()
